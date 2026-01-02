@@ -10,16 +10,20 @@ import productRoutes from './routes/productRoutes.js'
 import cartRoutes from './routes/cartRoutes.js'
 import orderRoutes from './routes/orderRoutes.js'
 
-let port = process.env.PORT || 6000
+let port = process.env.PORT || 5000
 
 let app = express()
 
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
- origin: process.env.FRONTEND_URL || ["http://localhost:5173", "http://localhost:5174"],
+ origin: process.env.FRONTEND_URL || true,
  credentials:true
 }))
+
+app.get("/", (req, res) => {
+  res.json({ message: "Backend API is running", status: "ok" });
+});
 
 app.use("/api/auth",authRoutes)
 app.use("/api/user",userRoutes)
@@ -33,13 +37,12 @@ app.use("/api/order",orderRoutes)
 const startServer = async () => {
   try {
     await connectDb();
-    app.listen(port, () => {
-      console.log("Hello From Server");
-    });
   } catch (error) {
-    console.log("Failed to start server due to DB connection error:", error);
-    process.exit(1);
+    console.log("Warning: Starting server without database connection");
   }
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
+  });
 };
 
 startServer();

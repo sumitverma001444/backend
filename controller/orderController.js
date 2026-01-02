@@ -4,10 +4,17 @@ import razorpay from 'razorpay'
 import dotenv from 'dotenv'
 dotenv.config()
 const currency = 'inr'
-const razorpayInstance = new razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-})
+
+let razorpayInstance = null;
+const getRazorpayInstance = () => {
+    if (!razorpayInstance && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+        razorpayInstance = new razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+    }
+    return razorpayInstance;
+}
 
 // for User
 export const placeOrder = async (req,res) => {
@@ -41,6 +48,10 @@ export const placeOrder = async (req,res) => {
 
 export const placeOrderRazorpay = async (req,res) => {
     try {
+        const instance = getRazorpayInstance();
+        if (!instance) {
+            return res.status(503).json({message: 'Razorpay is not configured'});
+        }
         
          const {items , amount , address} = req.body;
          const userId = req.userId;
@@ -62,7 +73,7 @@ export const placeOrderRazorpay = async (req,res) => {
             currency: currency.toUpperCase(),
             receipt : newOrder._id.toString()
          }
-         await razorpayInstance.orders.create(options, (error,order)=>{
+         await instance.orders.create(options, (error,order)=>{
             if(error) {
                 console.log(error)
                 return res.status(500).json(error)
@@ -79,9 +90,13 @@ export const placeOrderRazorpay = async (req,res) => {
 
 export const verifyRazorpay = async (req,res) =>{
     try {
+        const instance = getRazorpayInstance();
+        if (!instance) {
+            return res.status(503).json({message: 'Razorpay is not configured'});
+        }
         const userId = req.userId
         const {razorpay_order_id} = req.body
-        const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
+        const orderInfo = await instance.orders.fetch(razorpay_order_id)
         if(orderInfo.status === 'paid'){
             await Order.findByIdAndUpdate(orderInfo.receipt,{payment:true});
             await User.findByIdAndUpdate(userId , {cartData:{}})
