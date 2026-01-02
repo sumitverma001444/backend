@@ -2,13 +2,13 @@ import express from 'express'
 import dotenv from 'dotenv'
 import connectDb from './config/db.js'
 import cookieParser from 'cookie-parser'
-import authRoutes from './routes/authRoutes.js'
+import authRoutes from "./routes/authRoutes.js"
 dotenv.config()
 import cors from "cors"
-import userRoutes from './routes/userRoutes.js'
-import productRoutes from './routes/productRoutes.js'
-import cartRoutes from './routes/cartRoutes.js'
-import orderRoutes from './routes/orderRoutes.js'
+import userRoutes from "./routes/userRoutes.js"
+import productRoutes from "./routes/productRoutes.js"
+import cartRoutes from "./routes/cartRoutes.js"
+import orderRoutes from "./routes/orderRoutes.js"
 
 let port = process.env.PORT || 5000
 
@@ -22,7 +22,7 @@ app.use(cors({
 }))
 
 app.get("/", (req, res) => {
-  res.json({ message: "Backend API is running", status: "ok" });
+  res.send("Hello From Server");
 });
 
 app.use("/api/auth",authRoutes)
